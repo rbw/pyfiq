@@ -7,6 +7,12 @@ Currently, only Redis is supported, but `pyfiq` is designed with modularity in m
 
 ## Quick start
 
+### Installing
+
+```
+$ pip install pyfiq
+```
+
 ### Bootstrap the worker
 
 This should run once on application startup, typically in your main thread or service entrypoint:
