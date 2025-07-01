@@ -1,7 +1,9 @@
 # pyfiq
 
-`pyfiq` is a minimal task queue for Python. It runs background functions in FIFO order--without Celery, brokers, or boilerplate.  
+`pyfiq` is a minimal task queue for Python. It runs background functions in FIFO order--without Celery, brokers, or boilerplate.
 Perfect for I/O-bound tasks like HTTP requests, syncing with external systems, or sending webhooks.
+
+Tasks are safely distributed across multiple application instances, ensuring strict per-queue ordering even when called concurrently.
 
 Currently, only Redis is supported, but `pyfiq` is designed with modularity in mind.
 
