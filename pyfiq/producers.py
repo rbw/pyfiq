@@ -1,5 +1,6 @@
 import functools
 import logging
+import uuid
 
 from . import registry
 from .manager import mgr
@@ -7,19 +8,20 @@ from .manager import mgr
 log = logging.getLogger("pyfiq.producer")
 
 
-def fifo(queue_name):
+def fifo(queue):
     def decorator(func):
-        registry.register(func, queue_name)
+        registry.register(func, queue)
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             task = {
+                "id": str(uuid.uuid4()),
                 "func": func.__name__,
                 "args": args,
                 "kwargs": kwargs,
             }
-            task_id = mgr.backend.push(queue_name, task)
-            log.debug(f"Enqueued {task} (task_id={task_id})")
+            log.debug(f"Enqueue {task['func']} (id={task['id']}])")
+            mgr.backend.push(queue, task)
 
         return wrapper
 

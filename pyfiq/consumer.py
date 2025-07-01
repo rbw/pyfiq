@@ -7,17 +7,16 @@ from .manager import mgr
 log = logging.getLogger("pyfiq.consumer")
 
 
-def queue_consumer(queue):
-    log.info(f"Starting consumer for queue: {queue}")
+def consume_queue(queue_name):
+    log.debug(f"Starting consumer for queue: {queue_name}")
 
     while True:
-        task = mgr.backend.pop(queue)
-        log.info(f"Consuming message {task} of {queue}")
+        task = mgr.backend.pop(queue_name)
         if task:
-            func_name = task["func"]
-            entry = get_registry().get(func_name)
+            log.debug(f"Dequeue {task['func']} (id={task['id']})")
+            entry = get_registry().get(task["func"])
             if entry:
                 retval = entry["func"](*task["args"], **task["kwargs"])
-                log.info(f"Executed task {task["func"]}: {retval}")
+                log.debug(f"Execute {task['func']} (id={task['id']}): {retval}")
         else:
             time.sleep(0.1)

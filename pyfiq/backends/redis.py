@@ -1,13 +1,7 @@
 import json
 import redis
 
-
-class QueueBackend:
-    def push(self, queue_name, task):
-        raise NotImplementedError
-
-    def pop(self, queue_name, timeout=1):
-        raise NotImplementedError
+from ._base import QueueBackend
 
 
 class RedisQueueBackend(QueueBackend):

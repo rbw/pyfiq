@@ -15,7 +15,7 @@ class QueueManager:
     @backend.setter
     def backend(self, backend: QueueBackend):
         self._backend = backend
-        log.info(f"Backend configured: {self._backend}")
+        log.debug(f"Backend configured: {self._backend}")
 
 
 mgr = QueueManager()
