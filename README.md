@@ -70,3 +70,27 @@ def fetch_microsoft():
 def fetch_github():
     requests.get("https://github.com")
 ```
+
+## Todo
+
+### Redis / pyfiq Core Logic
+- Graceful shutdown: Ensure background thread stops cleanly (e.g. via signal handlers or context managers)
+- Error handling & logging: Catch and log exceptions inside task execution without crashing the worker
+- Retry support: Optional retries on failure, ideally with configurable delay or retry queue
+- Task deduplication (optional): Prevent duplicate enqueues via Redis keys or hashes
+- Task expiration / TTL: Option to discard stale tasks (use Redis TTL or ZSET-based queues if needed)
+- Custom serialization support: Allow override of default JSON serializer (e.g., for datetime, Decimal)
+- Connection pool support: Reuse Redis connections across queues and workers
+- Support for async decorators (optional): Allow @fifo to be used on async def functions (using asyncio.to_thread etc.)
+
+### Testing & Reliability
+
+- Unit tests: Cover queue backend, task dispatch, decorator behavior
+- Simulate concurrent enqueuers across instances
+
+### CI/CD Pipeline
+
+- GitHub Actions
+- Run tests on push & PR
+- PyPI publishing on version push tag
+- Automatic PyPI publish (publish.yml GA):
