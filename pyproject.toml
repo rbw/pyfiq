@@ -1,0 +1,19 @@
+[project]
+name = "pyfiq"
+version = "0.1.0"
+description = "No drama. Just ordered execution."
+authors = [
+    { name = "Robert Wikman", email = "rbw@vault13.org" }
+]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "redis>=4.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
