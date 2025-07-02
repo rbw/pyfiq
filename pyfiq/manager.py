@@ -1,12 +1,16 @@
 import logging
 
 from .backends import QueueBackend
+from .registry import QueueRegistry
 
 log = logging.getLogger("pyfiq.manager")
 
 
 class QueueManager:
     _backend: QueueBackend = None
+
+    def __init__(self):
+        self.registry = QueueRegistry()
 
     @property
     def backend(self):

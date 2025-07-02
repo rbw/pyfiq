@@ -1,7 +1,6 @@
 import logging
 import time
 
-from .registry import get_registry
 from .manager import mgr
 
 log = logging.getLogger("pyfiq.consumer")
@@ -13,10 +12,11 @@ def consume_queue(queue_name):
     while True:
         task = mgr.backend.pop(queue_name)
         if task:
-            log.debug(f"Dequeue {task['func']} (id={task['id']})")
-            entry = get_registry().get(task["func"])
+            log.debug(f"Dequeue {task['id']} from {queue_name}")
+            entry = mgr.registry.get_func(task["id"])
+
             if entry:
-                retval = entry["func"](*task["args"], **task["kwargs"])
-                log.debug(f"Execute {task['func']} (id={task['id']}): {retval}")
+                retval = entry.func(*task["args"], **task["kwargs"])
+                log.debug(f"Execute {entry.id}): {retval}")
         else:
             time.sleep(0.1)
