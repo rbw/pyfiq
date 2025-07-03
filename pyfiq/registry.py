@@ -8,7 +8,7 @@ class QRIMeta(type):
             return _qri_registry[func_id]
 
         instance = super().__call__(func, queue)
-        instance.id = func_id
+        instance.path = func_id
         _qri_registry[func_id] = instance
         return instance
 
@@ -24,7 +24,7 @@ class QueueRegistry:
     @property
     def funcs(self):
         for fn, qri in _qri_registry.items():
-            yield {qri.id: (qri.func, qri.queue)}
+            yield {qri.path: (qri.func, qri.queue)}
 
     @property
     def queues(self):

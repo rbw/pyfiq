@@ -11,7 +11,7 @@ def fifo(queue):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             task = Task(queue, {
-                "id": qri.id,
+                "path": qri.path,
                 "args": args,
                 "kwargs": kwargs,
             })

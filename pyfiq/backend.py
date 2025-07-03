@@ -13,12 +13,14 @@ class RedisQueueBackend:  # @TODO: Subclass Redis instead of from_url
         self.redis = redis.Redis.from_url(redis_url)
 
     def push(self, queue_name, task):
-        log.debug(f"Enqueue {task.id} (args={task.args}, kwargs={task.kwargs})")
+        log.debug(f"Enqueue {task}")
         self.redis.rpush(queue_name, task.json)
 
     def pop(self, queue_name, timeout=1):
         if message := self.redis.blpop(queue_name, timeout=timeout):
-            return Task.load(*message)
+            task = Task.load(*message)
+            log.debug(f"Dequeue {task}")
+            return task
 
         return None
 
