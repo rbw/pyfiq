@@ -1,13 +1,13 @@
 import logging
 
-from .backends import QueueBackend
+from .backend import RedisQueueBackend
 from .registry import QueueRegistry
 
 log = logging.getLogger("pyfiq.manager")
 
 
 class QueueManager:
-    _backend: QueueBackend = None
+    _backend: RedisQueueBackend = None
 
     def __init__(self):
         self.registry = QueueRegistry()
@@ -17,7 +17,7 @@ class QueueManager:
         return self._backend
 
     @backend.setter
-    def backend(self, backend: QueueBackend):
+    def backend(self, backend: RedisQueueBackend):
         self._backend = backend
         log.debug(f"Backend configured: {self._backend}")
 

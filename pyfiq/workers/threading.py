@@ -2,13 +2,13 @@ import threading
 import logging
 
 from pyfiq.manager import mgr
-from pyfiq.backends import QueueBackend, RedisQueueBackend
+from pyfiq.backend import RedisQueueBackend
 from pyfiq.consumer import consume_queue
 
 log = logging.getLogger("pyfiq.worker")
 
 
-def threaded_worker(backend: QueueBackend = RedisQueueBackend()):
+def threaded_worker(backend: RedisQueueBackend = RedisQueueBackend()):
     log.debug("Starting threaded worker")
     mgr.backend = backend
 
