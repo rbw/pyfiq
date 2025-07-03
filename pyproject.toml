@@ -1,6 +1,6 @@
 [project]
 name = "pyfiq"
-version = "0.1.0"
+version = "0.1.1"
 description = "No drama. Just ordered execution."
 authors = [
     { name = "Robert Wikman", email = "rbw@vault13.org" }
