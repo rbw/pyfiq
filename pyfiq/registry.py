@@ -1,7 +1,9 @@
 _qri_registry = {}
 
 
-class QRIMeta(type):
+class QueueRegistryItemMeta(type):
+    """Implements func_id multiton (on func_id)"""
+
     def __call__(cls, func, queue):
         func_id = f"{func.__module__}.{func.__qualname__}"
         if func in _qri_registry:
@@ -13,13 +15,18 @@ class QRIMeta(type):
         return instance
 
 
-class QueueRegistry:
-    class QueueRegistryItem(metaclass=QRIMeta):
-        id = None
+class QueueRegistryItem(metaclass=QueueRegistryItemMeta):
+    """Creates and registers a registry item if it isn't registered already"""
 
-        def __init__(self, func, queue):
-            self.func = func
-            self.queue = queue
+    id = None
+
+    def __init__(self, func, queue):
+        self.func = func
+        self.queue = queue
+
+
+class QueueRegistry:
+    """Registry facade around qri registry"""
 
     @property
     def funcs(self):
@@ -31,8 +38,9 @@ class QueueRegistry:
         for qri in _qri_registry.values():
             yield qri.queue
 
-    def add_func(self, func, queue):
-        return self.QueueRegistryItem(func, queue)
+    @classmethod
+    def add_func(cls, func, queue):
+        return QueueRegistryItem(func, queue)
 
     @classmethod
     def get_func(cls, func_id):
