@@ -1,3 +1,3 @@
 from .workers import threaded_worker
-from .producers import fifo
+from .producer import fifo
 from .backend import RedisQueueBackend

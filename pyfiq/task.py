@@ -2,11 +2,16 @@ import json
 
 
 class Task:
-    def __init__(self, message):
-        self.queue, item = message[0], json.loads(message[1])
-        self.id = item["id"]
-        self.args = item["args"]
-        self.kwargs = item["kwargs"]
+    def __init__(self, queue, message):
+        self.queue = queue
+        self.id = message["id"]
+        self.args = message["args"]
+        self.kwargs = message["kwargs"]
+
+    @classmethod
+    def load(cls, queue, json_str):
+        message = json.loads(json_str)
+        return cls(queue, message)
 
     @property
     def json(self):

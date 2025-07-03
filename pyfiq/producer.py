@@ -10,7 +10,7 @@ def fifo(queue):
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            task = Task({
+            task = Task(queue, {
                 "id": qri.id,
                 "args": args,
                 "kwargs": kwargs,

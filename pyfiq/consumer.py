@@ -13,10 +13,10 @@ def consume_queue(queue_name):
         task = mgr.backend.pop(queue_name)
         if task:
             log.debug(f"Dequeue {task}")
-            qri = mgr.registry.get_func(task["id"])
+            qri = mgr.registry.get_func(task.id)
 
             if qri:
-                retval = qri.func(*task["args"], **task["kwargs"])
+                retval = qri.func(*task.args, **task.kwargs)
                 log.debug(f"Execute {qri.id}: {retval}")
         else:
             time.sleep(0.1)

@@ -18,7 +18,7 @@ class RedisQueueBackend:  # @TODO: Subclass Redis instead of from_url
 
     def pop(self, queue_name, timeout=1):
         if message := self.redis.blpop(queue_name, timeout=timeout):
-            return Task(message)
+            return Task.load(*message)
 
         return None
 
