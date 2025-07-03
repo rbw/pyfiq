@@ -12,7 +12,7 @@ def threaded_worker(backend: RedisQueueBackend = RedisQueueBackend()):
     log.debug("Starting threaded worker")
     mgr.backend = backend
 
-    for queue in mgr.registry.queues:
+    for queue in mgr.bindings.queues:
         log.debug(f"Initializing worker thread for queue: {queue}")
         thread = threading.Thread(target=consume_queue, args=(queue,), daemon=True)
         thread.start()

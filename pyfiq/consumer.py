@@ -10,13 +10,11 @@ def consume_queue(queue_name):
     log.debug(f"Starting consumer for queue: {queue_name}")
 
     while True:
-        task = mgr.backend.pop(queue_name)
-        if task:
-            log.debug(f"Dequeue {task}")
-            qri = mgr.registry.get_func(task.path)
+        if msg := mgr.backend.pop(queue_name):
+            binding = mgr.bindings.get(msg.fqn)
 
-            if qri:
-                retval = qri.func(*task.args, **task.kwargs)
-                log.debug(f"Execute {qri.path} (result={retval})")
+            if binding:
+                retval = binding.func(*msg.args, **msg.kwargs)
+                log.debug(f"Execute {msg.fqn} (result={retval})")
         else:
             time.sleep(0.1)

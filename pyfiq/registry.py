@@ -1,53 +1,65 @@
-_qri_registry = {}
+import json
+import logging
+
+from .utils import get_python_fqn
+
+log = logging.getLogger("pyfiq.registry")
 
 
-class QueueRegistryItemMeta(type):
-    """Implements func_id multiton (on func_id)"""
+class FifoBindingMeta(type):
+    """Implements binding multiton (on fqn / fully-qualified name)"""
 
     def __call__(cls, func, queue):
-        func_id = f"{func.__module__}.{func.__qualname__}"
-        if func in _qri_registry:
-            return _qri_registry[func_id]
+        fqn = get_python_fqn(func)
+        if binding := BindingsMap.get(fqn):
+            # Binding for `func` already exists.
+            # This guarantees that any given function is bound only once.
+            # Support for multiple queues and workers for the same function can be
+            # added here in the future by broadening this constraint.
+            log.warning(f"Function {func} already bound to {queue}")
 
-        instance = super().__call__(func, queue)
-        instance.path = func_id
-        _qri_registry[func_id] = instance
-        return instance
+            # For now, we'll just return the existing binding
+            return binding
+
+        # Create new binding
+        binding = super().__call__(func, queue)
+        BindingsMap.registry[fqn] = binding
+        log.debug(f"Added binding: {binding}")
+
+        return binding
 
 
-class QueueRegistryItem(metaclass=QueueRegistryItemMeta):
-    """Creates and registers a registry item if it isn't registered already"""
-
-    id = None
+class FifoBinding(metaclass=FifoBindingMeta):
+    """Creates and registers a FIFO binding"""
 
     def __init__(self, func, queue):
+        self.fqn = get_python_fqn(func)
         self.func = func
         self.queue = queue
 
+    def __repr__(self):
+        return f"FifoBinding({self.fqn}, {self.queue})"
 
-class QueueRegistry:
-    """Registry facade around qri registry"""
 
-    @property
-    def funcs(self):
-        for fn, qri in _qri_registry.items():
-            yield {qri.path: (qri.func, qri.queue)}
+class BindingsMap:
+    """Facade around bindings"""
+
+    registry = {}
 
     @property
     def queues(self):
-        for qri in _qri_registry.values():
-            yield qri.queue
+        for binding in self.registry.values():
+            yield binding.queue
 
     @classmethod
-    def add_func(cls, func, queue):
-        return QueueRegistryItem(func, queue)
+    def add(cls, func, queue):
+        binding = FifoBinding(func, queue)
+        log.debug(f"Created binding for {binding.fqn} (queue={binding.queue})")
+        return binding
 
     @classmethod
-    def get_func(cls, func_id):
-        return _qri_registry[func_id]
+    def get(cls, fqn):
+        return cls.registry.get(fqn)
 
-    def __setitem__(self, func, queue):
-        self.add_func(func, queue)
-
-    def __getitem__(self, func):
-        return self.get_func(func)
+    def __dict__(self):
+        return self.registry
