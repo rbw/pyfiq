@@ -1,96 +1,58 @@
-# pyfiq
+<p align="center">
+  <img src="extra/logo.png" alt="pyfiq Logo" width="592">
+</p>
 
-`pyfiq` is a minimal Redis-backed FIFO task queue for Python. It lets you decorate functions with `@fifo(...)`, and they'll be queued for execution in 
-strict order processed by threaded background workers utilizing Redis BLPOP.
+---
 
-It's for I/O-bound tasks like HTTP requests, webhook dispatching, or syncing with third-party APIs--especially when execution order matters, but you don't want the 
-complexity of Celery or external workers.
+`pyfiq` is a lightweight, Redis-backed FIFO task queue for Python. It lets you decorate functions with `@fifo(...)`, enqueue them for execution, and ensures they run **in strict order**, even across multiple application instances.  
 
-#### Unlike:
-- **Celery**, which requires brokers, workers, and doesn't preserve ordering by default 
-- **AWS Lambda**, which don't guarantee FIFO unless using with SQS FIFO + extra setup
+Decorated functions can be called like any normal Python function, but instead of executing immediately, they're placed into a FIFO queue for asynchronous processing by background workers.  
 
-#### pyfiq is:
-- Embedded: runs inside your application process (no separate worker service)
-- Application-scaled \& distributed: queues are processed wherever your app runs
-- Order-preserving: per-queue FIFO with one active consumer per queue
-- Zero-config: no external orchestrators, brokers, or setup required
+It's designed for workflows where **ordering matters more than raw throughput** -- for example:  
 
-It's designed to be very simple, and only provide ordered execution of tasks. The code is rudimentary right now, and there's a lot of room for improvement.
+- Coordinating a sequence of state-changing operations (reserve -> commit -> release).  
+- Propagating updates to a shared resource where operations must be applied in order.  
+- Driving event chains where later steps depend on earlier ones completing.  
 
-### Important #1
+Unlike Celery, AWS Lambda and such, `pyfiq` runs **inside your application**, scales naturally with it, and requires no extra infrastructure or deployment. Think of it as a **"FIFO microqueue"**: minimal setup, zero external workers, and fully embedded.  
 
-This library is intended only for I/O-bound tasks.
-Using it with CPU-bound code is not recommended, as it runs in a background thread and would block execution.
+---
 
-### Important #2
+## Why pyfiq?  
 
-This project is in its early stages of development.
+- **Strict ordering**: tasks on the same queue are always executed in the order they were enqueued.  
+- **Embedded and distributed**: workers live in your app and scale out naturally across multiple instances.  
+- **Decorators feel native**: call `@fifo`-decorated functions like any normal Python function; they’re automatically queued behind the scenes.  
+- **Lightweight and scalable**: works for both small apps and large distributed backends.  
+- **Zero-config**: drop it in and go--no orchestration needed.  
 
+---
 
-## Quick start
+## Why queue network I/O?  
 
-### Installing
+In modern applications, network operations like API calls or event propagation can become a bottleneck:  
 
-```
-$ pip install pyfiq
-```
+- Calling external systems directly ties up request/response cycles and risks failures bubbling up to clients.  
+- Spikes in traffic can overwhelm external APIs and hit rate limits.  
+- In distributed systems, concurrent calls from multiple instances can apply changes **out of order**  
 
-### Bootstrap the worker
+By offloading network calls to a queue:  
+- You decouple them from user-facing workflows.  
+- You smooth out traffic bursts with natural throttling.  
+- You enforce strict ordering, even across a scaled-out deployment.  
 
-This should run once on application startup, typically in your main thread or service entrypoint:
+---
 
-```python
-from pyfiq import threaded_worker, RedisQueueBackend
+## 📖 Examples
 
-worker = threaded_worker(
-    backend=RedisQueueBackend("redis://localhost")
-)
-```
+See [the examples folder](./extra/examples) for ready-to-run code samples.  
 
-This starts a background worker thread that consumes tasks from Redis.
+---
 
-### Decorate your functions
+## When *not* to use pyfiq  
 
-Decorate the functions you want to be processed asynchronously in a FIFO queue:
+This is **not Celery**. Don’t use it for:  
 
-```python
-import requests
-from pyfiq import fifo
-
-@fifo(queue="http-requests1")
-def fetch_google():
-    requests.get("https://google.com")
-
-@fifo(queue="http-requests1")
-def fetch_microsoft():
-    requests.get("https://microsoft.com")
-
-@fifo(queue="http-requests2")
-def fetch_github():
-    requests.get("https://github.com")
-```
-
-## Todo
-
-### Redis / pyfiq Core Logic
-- Graceful shutdown: Ensure background thread stops cleanly (e.g. via signal handlers or context managers)
-- Error handling & logging: Catch and log exceptions inside task execution without crashing the worker
-- Retry support: Optional retries on failure, ideally with configurable delay or retry queue
-- Task deduplication (optional): Prevent duplicate enqueues via Redis keys or hashes
-- Task expiration / TTL: Option to discard stale tasks (use Redis TTL or ZSET-based queues if needed)
-- Custom serialization support: Allow override of default JSON serializer (e.g., for datetime, Decimal)
-- Connection pool support: Reuse Redis connections across queues and workers
-- Support for async decorators (optional): Allow @fifo to be used on async def functions (using asyncio.to_thread etc.)
-
-### Testing & Reliability
-
-- Unit tests: Cover queue backend, task dispatch, decorator behavior
-- Simulate concurrent enqueuers across instances
-
-### CI/CD Pipeline
-
-- GitHub Actions
-- Run tests on push & PR
-- PyPI publishing on version push tag
-- Automatic PyPI publish (publish.yml GA):
+- CPU-bound workloads where parallelism matters.  
+- High-throughput data processing.  
+- Complex workflows needing robust monitoring, retries, and visibility.  
