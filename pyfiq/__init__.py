@@ -9,14 +9,14 @@ from .task import Task
 log = logging.getLogger("pyfiq.producer")
 
 
-def fifo(queue, on_success=None, on_error=None):
+def fifo(queue, on_success=None, on_error=None, max_retries=0):
     def decorator(func):
-        b = mgr.bindings.add(func, queue, on_success, on_error)
+        b = mgr.bindings.add(func, queue, max_retries, on_success, on_error)
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             t = Task(fqn=b.fqn, args=args, kwargs=kwargs)
-            mgr.backend.push(queue, t)
+            mgr.backend.rpush(queue, t)
             log.debug(f"Enqueued {t} (queue={queue})")
 
         return wrapper

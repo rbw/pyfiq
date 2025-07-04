@@ -12,7 +12,7 @@ def noop(*args, **kwargs):
 class FifoBindingMeta(type):
     """Implements binding multiton (on fqn / fully-qualified name)"""
 
-    def __call__(cls, func, queue, on_success, on_error):
+    def __call__(cls, func, queue, max_retries, on_success, on_error):
         fqn = get_python_fqn(func)
         if binding := TaskRegistry.get(fqn):
             # Binding for `func` already exists.
@@ -25,7 +25,7 @@ class FifoBindingMeta(type):
             return binding
 
         # Create new binding
-        binding = super().__call__(func, queue, on_success, on_error)
+        binding = super().__call__(func, queue, max_retries, on_success, on_error)
         TaskRegistry.bindings[fqn] = binding
         log.debug(f"Added binding: {binding}")
 
@@ -35,10 +35,11 @@ class FifoBindingMeta(type):
 class FifoBinding(metaclass=FifoBindingMeta):
     """Creates and registers a new FIFO binding and binds response handlers"""
 
-    def __init__(self, func, queue, on_success, on_error):
+    def __init__(self, func, queue, max_retries, on_success, on_error):
         self.fqn = get_python_fqn(func)
         self.func = func
         self.queue = queue
+        self.max_retries = max_retries
         self.on_success = on_success if callable(on_success) else noop
         self.on_error = on_error if callable(on_error) else noop
 
@@ -57,11 +58,11 @@ class TaskRegistry:
             yield binding.queue
 
     @classmethod
-    def add(cls, func, queue, on_success=None, on_error=None):
-        return FifoBinding(func, queue, on_success, on_error)
+    def add(cls, func, queue, max_retries, on_success=None, on_error=None) -> FifoBinding:
+        return FifoBinding(func, queue, max_retries, on_success, on_error)
 
     @classmethod
-    def get(cls, fqn):
+    def get(cls, fqn) -> FifoBinding:
         return cls.bindings.get(fqn)
 
     def __dict__(self):
