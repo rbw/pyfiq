@@ -6,15 +6,20 @@ from .manager import mgr
 log = logging.getLogger("pyfiq.consumer")
 
 
-def consume_queue(queue_name):
-    log.debug(f"Starting consumer for queue: {queue_name}")
+def consume_queue(queue):
+    log.debug(f"Starting consumer for queue: {queue}")
 
     while True:
-        if msg := mgr.backend.pop(queue_name):
-            binding = mgr.bindings.get(msg.fqn)
+        if task := mgr.backend.pop(queue):
+            log.debug(f"Dequeued {task} (queue={queue})")
+            binding = mgr.bindings.get(task.fqn)
 
             if binding:
-                retval = binding.func(*msg.args, **msg.kwargs)
-                log.debug(f"Execute {msg.fqn} (result={retval})")
+                try:
+                    log.debug(f"Executing {task} (queue={queue})")
+                    retval = binding.func(*task.args, **task.kwargs)
+                    binding.on_success(retval, task, binding)
+                except Exception as exc:
+                    binding.on_error(exc, task, binding)
         else:
             time.sleep(0.1)

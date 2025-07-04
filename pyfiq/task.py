@@ -3,7 +3,7 @@ from dataclasses import dataclass, asdict
 
 
 @dataclass
-class Message:
+class Task:
     fqn: str
     args: tuple
     kwargs: dict
@@ -19,6 +19,5 @@ class Message:
 
     def __repr__(self):
         return (
-            f"<Message path={self.fqn} "
-            f"args={self.args} kwargs={self.kwargs}>"
+            f"Task (fqn={self.fqn}, args={self.args}, kwargs={self.kwargs})"
         )

@@ -1,21 +1,23 @@
 import functools
+import logging
 
-from .manager import mgr
-from .message import Message
-
-from .workers import threaded_worker
 from .backend import RedisQueueBackend
-from .utils import get_python_fqn
+from .workers import threaded_worker
+from .manager import mgr
+from .task import Task
+
+log = logging.getLogger("pyfiq.producer")
 
 
-def fifo(queue):
+def fifo(queue, on_success=None, on_error=None):
     def decorator(func):
-        b = mgr.bindings.add(func, queue)
+        b = mgr.bindings.add(func, queue, on_success, on_error)
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            msg = Message(fqn=b.fqn, args=args, kwargs=kwargs)
-            mgr.backend.push(queue, msg)
+            t = Task(fqn=b.fqn, args=args, kwargs=kwargs)
+            mgr.backend.push(queue, t)
+            log.debug(f"Enqueued {t} (queue={queue})")
 
         return wrapper
 

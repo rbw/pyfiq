@@ -1,16 +1,16 @@
 import logging
 
 from .backend import RedisQueueBackend
-from .registry import BindingsMap
+from .registry import TaskRegistry
 
 log = logging.getLogger("pyfiq.manager")
 
 
-class TaskManager:
+class QueueManager:
     _backend: RedisQueueBackend = None
 
     def __init__(self):
-        self.bindings = BindingsMap()
+        self.bindings = TaskRegistry()
 
     @property
     def backend(self):
@@ -22,4 +22,4 @@ class TaskManager:
         log.debug(f"Backend configured: {self._backend}")
 
 
-mgr = TaskManager()
+mgr = QueueManager()
