@@ -26,12 +26,12 @@ def fetch_google_successfully():
     return requests.get("https://google.com")
 
 
-@fifo(queue="google-https", on_success=handle_success, on_error=handle_error)
+@fifo(queue="google-https", max_retries=3)
 def fetch_google_fail():
     raise Exception("Simulated failure!")
 
 
-@fifo(queue="microsoft-https", on_success=handle_success, on_error=handle_error)
+@fifo(queue="microsoft-https", on_success=handle_success)
 def fetch_microsoft():
     return requests.get("https://microsoft.com")
 
