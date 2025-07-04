@@ -30,7 +30,7 @@ def consume_queue(queue):
                     )
 
                     if retries < binding.max_retries:
-                        log.debug(f"Retrying {task}..")
+                        log.info(f"Retrying {task}..")
                         time.sleep(2)
                         mgr.backend.lpush(queue, task)
                         continue
