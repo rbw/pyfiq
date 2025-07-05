@@ -1,4 +1,4 @@
-from extra.examples.basic import handle_success<p align="center">
+<p align="center">
   <img src="extra/logo.png" alt="pyfiq Logo" width="592">
 </p>
 
