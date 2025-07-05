@@ -26,7 +26,7 @@ def fetch_google_successfully():
     return requests.get("https://google.com")
 
 
-@fifo(queue="google-https", max_retries=3)
+@fifo(queue="google-https", on_error=handle_error, max_retries=3)
 def fetch_google_fail():
     raise Exception("Simulated failure!")
 
