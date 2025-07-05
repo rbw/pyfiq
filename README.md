@@ -20,7 +20,7 @@ You can think of `pyfiq` as an **embedded, Python-native alternative to AWS Lamb
 - **Non-breaking API**: decorate any function with `@pyfiq.fifo(...)` and call it as usual, queued transparently.  
 - **Zero-config**: no brokers, orchestrators, or external services required.  
 
-Decorated functions behave like normal Python functions, but instead of executing immediately, they’re placed into a FIFO queue for asynchronous processing by background workers.  
+Decorated functions behave like normal Python functions, but instead of executing immediately, they're placed into a FIFO queue for asynchronous processing by background workers.  
 
 pyfiq is designed for workflows where **ordering matters more than raw throughput**, such as event-driven, state-changing operations.
 
@@ -94,7 +94,7 @@ def fetch_google():
 
 ### Call functions as usual
 
-There’s no need to manage queues or start consumers manually. Simply call your decorated function:
+There's no need to manage queues or start consumers manually. Simply call your decorated function:
 
 ```python
 fetch_google()
