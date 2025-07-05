@@ -15,7 +15,7 @@ You can think of `pyfiq` as an **embedded, Python-native alternative to AWS Lamb
 - **Portable**: runs anywhere Python and Redis are available.  
 - **Embedded**: workers run inside your application process--no external workers needed.  
 - **Distributed**: automatically scales across multiple app instances, providing redundancy and load balancing.  
-- **Parallel where it matters**: one worker per queue, multiple queues can be processed concurrently.  
+- **Parallel where it matters**: one worker per queue, with multiple queues processed concurrently. 
 - **Lightweight and scalable**: ideal for both small apps and large distributed backends.  
 - **Non-breaking API**: decorate any function with `@pyfiq.fifo(...)` and call it as usual, queued transparently.  
 - **Zero-config**: no brokers, orchestrators, or external services required.  
@@ -48,7 +48,7 @@ This project is in its early stages of development.
 
 ### Installing
 
-`pyfiq` is already published on PyPI, but not yet included in deployment pipelines. For now, install directly from the Git master branch to try it out:
+`pyfiq` is on PyPI, but for now install directly from the Git master branch to try it out:
 
 ```bash
 $ pip install git+https://github.com/rbw/pyfiq.git
