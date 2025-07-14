@@ -27,7 +27,7 @@ def fetch_google_successfully():
 
 
 @fifo(queue="google-https", on_error=handle_error, max_retries=3)
-def fetch_google_fail():
+def fetch_google_fail(asdf):
     raise Exception("Simulated failure!")
 
 
