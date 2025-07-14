@@ -3,9 +3,18 @@
 </p>
 
 ---
-`pyfiq` is a lightweight, MIT-licensed, Redis-backed FIFO task queue for Python. It lets you decorate functions with `@pyfiq.fifo(...)`, enqueue them for execution, and ensures those functions run **in strict order**, even across multiple application instances.  
+`pyfiq` is a MIT-licensed, lightweight, Redis-backed FIFO task queue for Python. It lets you decorate functions with `@pyfiq.fifo(...)`, enqueue them for execution, and ensures those functions run **in strict order**, even across multiple application instances.  
 
 You can think of `pyfiq` as an **embedded, Python-native alternative to AWS Lambda + SQS FIFO**: no external infrastructure, no vendor lock-in--just drop it into your app.
+
+```python
+import pyfiq
+
+@pyfiq.fifo(queue="remote-api-sync")
+def sync_user():
+    ...
+```
+         
 
 ---
 
