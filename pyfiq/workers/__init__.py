@@ -1,1 +1,1 @@
-from .threading import threaded_worker
+from .threading import ThreadedWorker

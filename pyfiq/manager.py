@@ -1,25 +1,31 @@
 import logging
 
-from .backend import RedisQueueBackend
-from .registry import TaskRegistry
+from .backend import RedisStreamsBackend
+from .bindings import registry, FifoBinding
 
 log = logging.getLogger("pyfiq.manager")
 
 
 class QueueManager:
-    _backend: RedisQueueBackend = None
+    backend: RedisStreamsBackend = None
 
-    def __init__(self):
-        self.bindings = TaskRegistry()
+    @classmethod
+    def get_queues(cls):
+        queues = []
+        for binding in registry.values():
+            queues.append(binding.queue)
 
-    @property
-    def backend(self):
-        return self._backend
+        return set(queues)
 
-    @backend.setter
-    def backend(self, backend: RedisQueueBackend):
-        self._backend = backend
-        log.debug(f"Backend configured: {self._backend}")
+    @classmethod
+    def add_binding(cls, func, queue, max_retries, retry_wait, on_success=None, on_error=None) -> FifoBinding:
+        return FifoBinding(func, queue, max_retries, retry_wait, on_success, on_error)
 
+    @classmethod
+    def get_binding(cls, fqn) -> FifoBinding:
+        return registry.get(fqn)
 
-mgr = QueueManager()
+    @classmethod
+    def init(cls, backend: RedisStreamsBackend):
+        cls.backend = backend
+        log.debug(f"Backend configured: {cls.backend}")

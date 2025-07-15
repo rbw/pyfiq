@@ -15,6 +15,7 @@ class Task:
     @classmethod
     def load(cls, json_str):
         data = json.loads(json_str)
+        data["args"] = tuple(data.get("args", []))
         return cls(**data)
 
     def __repr__(self):
