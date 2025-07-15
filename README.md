@@ -4,17 +4,10 @@
 
 ---
 `pyfiq` is a MIT-licensed, lightweight, Redis-backed FIFO task queue for Python. It lets you decorate functions with `@pyfiq.fifo(...)`, enqueue them for execution, and ensures those functions run **in strict order**, even across multiple application instances.  
+It uses [Redis Streams](https://redis.io/docs/latest/develop/data-types/streams/) for FIFO task processing and works seamlessly with Redis-compatible forks like Valkey, KeyDB, and others.
 
 You can think of `pyfiq` as an **embedded, Python-native alternative to AWS Lambda + SQS FIFO**: no external infrastructure, no vendor lock-in--just drop it into your app.
 
-```python
-import pyfiq
-
-@pyfiq.fifo(queue="remote-api-sync")
-def sync_user():
-    ...
-```
-         
 
 ---
 
@@ -70,12 +63,11 @@ $ pip install git+https://github.com/rbw/pyfiq.git
 Start a background worker once at application startup, typically in your main thread or service entrypoint:
 
 ```python
-from pyfiq import threaded_worker, RedisQueueBackend
+import pyfiq
 
 # Start a threaded worker that processes queued tasks
-threaded_worker(
-    backend=RedisQueueBackend("redis://localhost")
-)
+worker = pyfiq.ThreadedWorker(redis_url="redis://localhost")
+worker.start()
 ```
 
 This spins up a lightweight background thread that consumes tasks (i.e., functions decorated with `@pyfiq.fifo`) from Redis.
@@ -87,7 +79,6 @@ Mark any function you want to run asynchronously and in strict FIFO order:
 
 ```python
 import logging
-import requests
 import pyfiq
 
 log = logging.getLogger(__name__)
@@ -95,18 +86,29 @@ log = logging.getLogger(__name__)
 def handle_success(retval, task, binding):
     log.info(f"Task succeeded ({task}): {retval}")
 
+def handle_error(exc, task, _):
+    log.exception(f"Task failed ({task})", exc_info=exc)
 
-@pyfiq.fifo(queue="http-requests", on_success=handle_success)
-def fetch_google():
-    return requests.get("https://google.com")
+    
+@pyfiq.fifo(queue="queue1")  # Shared
+def sync_user_subscription():
+    ...
+
+@pyfiq.fifo(queue="queue1", max_retries=-1, retry_wait=3, on_error=handle_error)  # Shared, retry forever (block consumption)
+def sync_user_metadata():
+    ...
+
+@pyfiq.fifo(queue="queue2", on_success=handle_success)
+def update_payment_transaction():
+    ...
 ```
 
 ### Call functions as usual
 
-There's no need to manage queues or start consumers manually. Simply call your decorated function:
+No need to manage queues, spin up workers, or handle consumer lifecycles--just call your decorated functions:
 
 ```python
-fetch_google()
+sync_user_metadata()
 ```
 
 Instead of running immediately, the call is enqueued for background execution in the order it was made.
